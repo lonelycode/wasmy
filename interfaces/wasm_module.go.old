@@ -1,0 +1,113 @@
+package interfaces
+
+import (
+	"encoding/json"
+	"fmt"
+	"os"
+)
+
+// 1MB comms buffer
+const BUFFER_SIZE = 1024 //1048576
+
+type IWasmModule interface {
+	GetMemoryPtr() *[]uint8
+	Handle() uint8
+}
+
+type loc struct {
+	start uint32
+	end   uint32
+}
+
+type DefaultWasmModule struct {
+	buffer    [BUFFER_SIZE]uint8
+	locBuffer [2]uint32
+	bufferMap map[uint32]loc
+	cursor    uint32
+}
+
+func (d *DefaultWasmModule) Init() {
+	d.bufferMap = make(map[uint32]loc)
+	d.cursor = 0
+}
+
+func (d *DefaultWasmModule) GetMemoryPtr() *[BUFFER_SIZE]uint8 {
+	return &d.buffer
+}
+
+func (d *DefaultWasmModule) GetCursor() uint32 {
+	return d.cursor
+}
+
+func (d *DefaultWasmModule) GetCursorMapPtr() *[2]uint32 {
+	return &d.locBuffer
+}
+
+func (d *DefaultWasmModule) GetCursorForData(id uint32) *[2]uint32 {
+	d.locBuffer[0] = 0
+	d.locBuffer[1] = 0
+
+	l, ok := d.bufferMap[id]
+	if !ok {
+		fmt.Println("MANAGED MODULE: NOT FOUND")
+		return &d.locBuffer
+	}
+
+	d.locBuffer[0] = l.start
+	d.locBuffer[1] = l.end
+
+	fmt.Println("=========")
+	fmt.Println(d.locBuffer)
+	fmt.Println("=========")
+
+	return &d.locBuffer
+}
+
+func (d *DefaultWasmModule) GetStartCursorForData(id uint32) uint32 {
+	l, ok := d.bufferMap[id]
+	if !ok {
+		return 0
+	}
+
+	return l.start
+}
+
+func (d *DefaultWasmModule) GetEndCursorForData(id uint32) uint32 {
+	l, ok := d.bufferMap[id]
+	if !ok {
+		return 0
+	}
+
+	return l.end
+}
+
+func (d *DefaultWasmModule) IncrementCursor(length uint32) uint32 {
+	// move the cursor by length of the data to the next open slot
+	d.cursor = d.cursor + length + 1
+	return d.cursor
+}
+
+func (d *DefaultWasmModule) Write(id uint32, data string) (uint32, uint32) {
+	enc, err := json.Marshal(data)
+	if err != nil {
+		os.Stderr.WriteString(err.Error())
+		return 0, 0
+	}
+
+	// TODO: add buffer length test
+	l := loc{}
+	l.start = d.cursor
+	lt := copy(d.buffer[d.cursor:len(enc)], enc)
+	fmt.Printf("wrote bytes: %v, len is: %v \n", lt, len(enc))
+	l.end = d.IncrementCursor(uint32(len(enc))) - 1 // take into account the free slot
+
+	fmt.Printf("MODULE WRITE(): %v\n", d.buffer[l.start:l.end])
+	fmt.Printf("MODULE WRITE() START: %v, END %v\n", l.start, l.end)
+	// store the variable
+	d.bufferMap[id] = l
+	return l.start, l.end
+}
+
+func (d *DefaultWasmModule) Handle() uint8 {
+	panic("override me")
+}
