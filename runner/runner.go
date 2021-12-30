@@ -8,7 +8,6 @@ import (
 	"os"
 
 	wasmtime "github.com/bytecodealliance/wasmtime-go"
-	"github.com/lonelycode/wasmy/exports"
 	"github.com/lonelycode/wasmy/shared_types"
 	"github.com/tinylib/msgp/msgp"
 )
@@ -16,6 +15,8 @@ import (
 // Runner provides methods that manages all the components of running multiple WASM
 // modules and calling arbitrary functions from them using managed I/O
 type Runner struct {
+	// HostFunctions are functions the host should expose to the nwasm file
+	HostFunctions      map[string]ExportFunc
 	mem                *wasmtime.Memory
 	store              *wasmtime.Store
 	instance           *wasmtime.Instance
@@ -26,15 +27,15 @@ type Runner struct {
 	funcMap            map[string]*wasmtime.Func
 }
 
-// exportFun represents the signature needed for any function exported by
+// ExportFun represents the signature needed for any function exported by
 // the host and imported by the WASM file
-type exportFunc func(int32, int32, int32) int32
+type ExportFunc func(int32, int32, int32) int32
 
 // WrapExport will wrap any function to be exported by the HOST and used by the WASM
 // module in order to capture the input args for the function and the output from the
 // function and pass the data cleanly to the WASM module (see the exports package
 // for an example function that can be wrapped).
-func (r *Runner) WrapExport(fn func(*shared_types.Args) (interface{}, error)) exportFunc {
+func (r *Runner) WrapExport(fn func(*shared_types.Args) (interface{}, error)) ExportFunc {
 	return func(dataLen int32, t2 int32, t3 int32) int32 {
 
 		ptr, err := r.hostInputBufferFn.Call(r.store)
@@ -90,8 +91,12 @@ func (r *Runner) WrapExport(fn func(*shared_types.Args) (interface{}, error)) ex
 
 // AddHostFunctions adds functions that can be imported into the WASM module,
 // multiple funcs can be added, they all live in the `env` namespace
-func (r *Runner) AddHostFunctions(linker *wasmtime.Linker, funcs map[string]exportFunc) {
-	for name, fn := range funcs {
+func (r *Runner) AddHostFunctions(linker *wasmtime.Linker) {
+	if r.HostFunctions == nil {
+		return
+	}
+
+	for name, fn := range r.HostFunctions {
 		linker.DefineFunc(r.store, "env", fmt.Sprintf("main.%s", name), fn)
 	}
 }
@@ -123,9 +128,7 @@ func (r *Runner) GetInstance(filename string) (*wasmtime.Instance, *wasmtime.Sto
 	}
 
 	// Set up the host functions we want to import
-	r.AddHostFunctions(linker, map[string]exportFunc{
-		"PrintHello": r.WrapExport(exports.PrintHello),
-	})
+	r.AddHostFunctions(linker)
 
 	// Next up we instantiate a module which is where we link in all our
 	// imports.

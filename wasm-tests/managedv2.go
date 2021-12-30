@@ -4,55 +4,43 @@ import (
 	"fmt"
 
 	"github.com/lonelycode/wasmy/interfaces"
+
+	// This MUST be imported to provide boilerplate exports
+	// Note this is not suitable for parallel execution, as you may end up overwriting i/o buffers
+	// for that, implement a Proto for each export
+	module_params "github.com/lonelycode/wasmy/module-params"
 )
 
-var exp *interfaces.WasmModulePrototype = &interfaces.WasmModulePrototype{}
+// SAMPLE USAGE
+// ------------
 
-// This is required so we can do I/O
-
-//export inputBuffer
-func InputBuffer() *[interfaces.FUNCBUFFER_SIZE]uint8 {
-	return exp.GetInputPtr()
-}
-
-//export outputBuffer
-func OutputBuffer() *[interfaces.FUNCBUFFER_SIZE]uint8 {
-	return exp.GetOutputPtr()
-}
-
-//export hostInputBuffer
-func HostInputBuffer() *[interfaces.FUNCBUFFER_SIZE]uint8 {
-	return exp.GetHostInputPtr()
-}
-
-//export hostOutputBuffer
-func HostOutputBuffer() *[interfaces.FUNCBUFFER_SIZE]uint8 {
-	return exp.GetHostOutputPtr()
-}
-
-// The wrapper will wrap execution of the function by grabbing input
-// variables from the input buffer and providing them to the function
-// as arguments, and then trapping the output of the function and
-// writing it to a serialised output buffer
-
-// sample imported func
+// sample imported func (see exports/exports.go and example/main.go)
 func PrintHello(int32) int32
 
-//export myExport
-func MyExport(inputLen int) int {
-	return interfaces.WrapExport(exp, inputLen, func(args ...interface{}) (interface{}, error) {
-		name := args[0].(string)
-		dt := fmt.Sprintf("hello %s", name)
-		fmt.Printf("inside module: %s\n", dt)
+// this is the function signature for all exported functions managed by the prototype
+func myFunction(args ...interface{}) (interface{}, error) {
+	name := args[0].(string)
+	dt := fmt.Sprintf("hello %s", name)
+	fmt.Printf("inside module: %s\n", dt)
 
-		doStuff()
+	// For demo purposes, let's call an imported function here,
+	// this is defined in the exports/exports.go file
+	doStuff()
 
-		return dt, nil
-	})()
+	return dt, nil
 }
 
+// MyExport is a function stub to export the wrapped and managed version
+// of our actual method (don't forget the `//export <foo>` tag otherwise
+// the method will remain unexported)
+//export myExport
+func MyExport(inputLen int) int {
+	return interfaces.WrapExport(module_params.Proto, inputLen, myFunction)()
+}
+
+// doStuff is an unexported module function that calls an imported method from the host
 func doStuff() {
-	ret, err := interfaces.CallImport(exp, PrintHello, "anderson")
+	ret, err := interfaces.CallImport(module_params.Proto, PrintHello, "anderson")
 	if err != nil {
 		fmt.Println(err)
 	}

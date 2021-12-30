@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 
-	"github.com/lonelycode/wasmy/exports"
 	"github.com/lonelycode/wasmy/runner"
 )
 
@@ -12,7 +11,7 @@ func main() {
 
 	// Let's export a sample function into the module
 	r.HostFunctions = map[string]runner.ExportFunc{
-		"PrintHello": r.WrapExport(exports.PrintHello),
+		"PrintHello": r.WrapExport(PrintHello),
 	}
 
 	// TODO: make this use application arguments
