@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/lonelycode/wasmy/shared_types"
+	shared_types "github.com/lonelycode/wasmy/shared-types"
 )
 
 // PrintHello is a sample function exported from the host and imported by the WASM module

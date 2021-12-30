@@ -8,7 +8,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/lonelycode/wasmy/shared_types"
+	shared_types "github.com/lonelycode/wasmy/shared-types"
 	"github.com/tinylib/msgp/msgp"
 )
 
