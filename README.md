@@ -42,3 +42,4 @@ function output (from runner): hello martin
 - This is an experimental library and has not been used in anger
 - The i/o buffers for guest and host functions are currently set to 1024 bytes, this can be increased by modiying `FUNCBUFFER_SIZE`. WASM requires fixed array sizes so a byte slice isn't suitable.
 - There's no overflow checks in place yet, so use at your peril
+- This lib was written for Go-based WASM modules, to work with other languages like AssemblyScript or Rust the wrappers will need to be converted first
