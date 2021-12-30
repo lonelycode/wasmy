@@ -40,5 +40,5 @@ function output (from runner): hello martin
 ## Warnings and Caveats
 
 - This is an experimental library and has not been used in anger
-- The i/o buffers for guest and host functions are currently set to 1024 bytes, this can be increased by modiying FUNCBUFFER_SIZE. WASM requires fixed array sizes so a byte slice isn't suitable.
+- The i/o buffers for guest and host functions are currently set to 1024 bytes, this can be increased by modiying `FUNCBUFFER_SIZE`. WASM requires fixed array sizes so a byte slice isn't suitable.
 - There's no overflow checks in place yet, so use at your peril
