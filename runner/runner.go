@@ -169,7 +169,7 @@ func (r *Runner) WarmUp(wasmFileName string, funcNames ...string) error {
 }
 
 // Run will call a function in the WASM module
-func (r *Runner) Run(name string, args ...interface{}) (*shared_types.Payload, error) {
+func (r *Runner) Run(name string, args ...interface{}) (interface{}, error) {
 	fn, ok := r.funcMap[name]
 	if !ok {
 		return nil, fmt.Errorf("function name not found")
@@ -181,7 +181,7 @@ func (r *Runner) Run(name string, args ...interface{}) (*shared_types.Payload, e
 		return nil, err
 	}
 
-	return out, nil
+	return out.Data, nil
 }
 
 // ManagedCall handles all the I/O for calling an exported WASM mmodule function by reading

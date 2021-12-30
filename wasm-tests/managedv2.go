@@ -57,7 +57,7 @@ func doStuff() {
 		fmt.Println(err)
 	}
 
-	fmt.Printf("host function output from inside module: %v\n", ret.Data)
+	fmt.Printf("host function output from inside module: %s\n", ret.(string))
 }
 
 func main() {}

@@ -155,7 +155,7 @@ func WrapExport(proto *WasmModulePrototype, inputLen int, exportFn func(args ...
 // writes the args to the host input buffer, it will then capture the output of the function
 // from the host output buffer, unmarshal it and return it to the caller as a Payload.
 // TODO: Maybe it should return the payload.Data interface instead?
-func CallImport(proto *WasmModulePrototype, fn func(int32) int32, args ...interface{}) (*shared_types.Payload, error) {
+func CallImport(proto *WasmModulePrototype, fn func(int32) int32, args ...interface{}) (interface{}, error) {
 	// Write our args to the host input buffer
 	lenInp, err := proto.WriteHostFnInput(args)
 	if err != nil {
@@ -172,5 +172,5 @@ func CallImport(proto *WasmModulePrototype, fn func(int32) int32, args ...interf
 		return nil, err
 	}
 
-	return output, nil
+	return output.Data, nil
 }

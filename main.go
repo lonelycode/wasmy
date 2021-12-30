@@ -21,6 +21,6 @@ func main() {
 		panic(err)
 	}
 
-	fmt.Printf("function output (from runner): %v \n", out.Data)
+	fmt.Printf("function output (from runner): %v \n", out)
 
 }
