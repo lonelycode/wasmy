@@ -24,7 +24,7 @@ type Runner struct {
 	outputBufferFn     *wasmtime.Func
 	hostInputBufferFn  *wasmtime.Func
 	hostOutputBufferFn *wasmtime.Func
-	funcMap            map[string]*wasmtime.Func
+	FuncMap            map[string]*wasmtime.Func
 }
 
 // ExportFun represents the signature needed for any function exported by
@@ -162,9 +162,9 @@ func (r *Runner) WarmUp(engine *wasmtime.Engine, module *wasmtime.Module, funcNa
 
 	r.GetRequiredExports(r.instance, r.store)
 
-	r.funcMap = make(map[string]*wasmtime.Func)
+	r.FuncMap = make(map[string]*wasmtime.Func)
 	for i, _ := range funcNames {
-		r.funcMap[funcNames[i]] = r.instance.GetExport(r.store, funcNames[i]).Func()
+		r.FuncMap[funcNames[i]] = r.instance.GetExport(r.store, funcNames[i]).Func()
 	}
 
 	return nil
@@ -172,7 +172,7 @@ func (r *Runner) WarmUp(engine *wasmtime.Engine, module *wasmtime.Module, funcNa
 
 // Run will call a function in the WASM module
 func (r *Runner) Run(name string, args ...interface{}) (interface{}, error) {
-	fn, ok := r.funcMap[name]
+	fn, ok := r.FuncMap[name]
 	if !ok {
 		return nil, fmt.Errorf("function name not found")
 	}
