@@ -164,7 +164,11 @@ func (r *Runner) WarmUp(engine *wasmtime.Engine, module *wasmtime.Module, funcNa
 
 	r.FuncMap = make(map[string]*wasmtime.Func)
 	for i, _ := range funcNames {
-		r.FuncMap[funcNames[i]] = r.instance.GetExport(r.store, funcNames[i]).Func()
+		fn := r.instance.GetExport(r.store, funcNames[i])
+		if fn != nil {
+			r.FuncMap[funcNames[i]] = r.instance.GetExport(r.store, funcNames[i]).Func()
+		}
+
 	}
 
 	return nil
