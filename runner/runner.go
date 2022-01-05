@@ -230,3 +230,7 @@ func ManagedCall(store wasmtime.Storelike, mem *wasmtime.Memory, inputBufferFn *
 
 	return nil
 }
+
+func GetEngine() *wasmtime.Engine {
+	return wasmtime.NewEngine()
+}
