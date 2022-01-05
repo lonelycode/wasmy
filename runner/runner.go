@@ -101,28 +101,27 @@ func (r *Runner) AddHostFunctions(linker *wasmtime.Linker) {
 	}
 }
 
-// GetInstance provides a WASM VM instance from the file name. It enables WASI,
-// but only shares stdout and stderr for easier logging.
-func (r *Runner) GetInstance(filename string) (*wasmtime.Instance, *wasmtime.Store, error) {
-	engine := wasmtime.NewEngine()
-	r.store = wasmtime.NewStore(engine)
-
-	module, err := wasmtime.NewModuleFromFile(r.store.Engine, filename)
+func GetModule(filename string, engine *wasmtime.Engine) (*wasmtime.Module, error) {
+	module, err := wasmtime.NewModuleFromFile(engine, filename)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
+	return module, err
+}
+
+// GetInstance provides a WASM VM instance from the file name. It enables WASI,
+// but only shares stdout and stderr for easier logging.
+func (r *Runner) GetInstance(module *wasmtime.Module, engine *wasmtime.Engine) (*wasmtime.Instance, *wasmtime.Store, error) {
+	r.store = wasmtime.NewStore(engine)
 	wConf := wasmtime.NewWasiConfig()
 	wConf.InheritStdout()
 	wConf.InheritStderr()
 	r.store.SetWasi(wConf)
-	if err != nil {
-		return nil, nil, err
-	}
 
 	// Create a linker with WASI functions defined within it
 	linker := wasmtime.NewLinker(engine)
-	err = linker.DefineWasi()
+	err := linker.DefineWasi()
 	if err != nil {
 		return nil, nil, err
 	}
@@ -155,8 +154,8 @@ func (r *Runner) GetRequiredExports(instance *wasmtime.Instance, store *wasmtime
 // WarmUp will load and prepare a WASM module instance and create a call map for the
 // runner to call, this means the wasm module can be warmed up in advance to minimise
 // execution time of WASM funcs.
-func (r *Runner) WarmUp(wasmFileName string, funcNames ...string) error {
-	_, _, err := r.GetInstance(wasmFileName)
+func (r *Runner) WarmUp(engine *wasmtime.Engine, module *wasmtime.Module, funcNames ...string) error {
+	_, _, err := r.GetInstance(module, engine)
 	if err != nil {
 		return err
 	}
