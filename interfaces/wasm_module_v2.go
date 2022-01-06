@@ -92,8 +92,8 @@ func (d *WasmModulePrototype) ReadHostFnOutput(length int, output *shared_types.
 }
 
 // WriteGuestFnOutput writes WASM-exported function output into the guest buffer as a Payload
-func (d *WasmModulePrototype) WriteGuestFnOutput(data interface{}) (int, error) {
-	out := &shared_types.Payload{Data: data}
+func (d *WasmModulePrototype) WriteGuestFnOutput(data interface{}, meta map[string]string) (int, error) {
+	out := &shared_types.Payload{Data: data, Meta: meta}
 
 	enc, err := out.MarshalMsg(nil)
 	if err != nil {
@@ -130,19 +130,19 @@ func (d *WasmModulePrototype) externGuestErr(err error) int {
 // write the args to the guest input buffer, run the function, and capture the return data
 // from the guest function to write into the output buffer. It returns the length of the data
 // written in order for the caller to pull the correct data from the buffer.
-func WrapExport(proto *WasmModulePrototype, inputLen int, exportFn func(args ...interface{}) (interface{}, error)) func() int {
+func WrapExport(proto *WasmModulePrototype, inputLen int, exportFn func(args ...interface{}) (interface{}, map[string]string, error)) func() int {
 	return func() int {
 		args, err := proto.ReadGuestFnInput(inputLen)
 		if err != nil {
 			return proto.externGuestErr(err)
 		}
 
-		ret, err := exportFn(args...)
+		ret, meta, err := exportFn(args...)
 		if err != nil {
 			return proto.externGuestErr(err)
 		}
 
-		n, err := proto.WriteGuestFnOutput(ret)
+		n, err := proto.WriteGuestFnOutput(ret, meta)
 		if err != nil {
 			return proto.externGuestErr(err)
 		}

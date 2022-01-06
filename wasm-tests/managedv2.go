@@ -18,7 +18,7 @@ import (
 func PrintHello(int32) int32
 
 // this is the function signature for all exported functions managed by the prototype
-func myFunction(args ...interface{}) (interface{}, error) {
+func myFunction(args ...interface{}) (interface{}, map[string]string, error) {
 	name := args[0].(string)
 
 	dt := fmt.Sprintf("hello %s", name)
@@ -29,7 +29,7 @@ func myFunction(args ...interface{}) (interface{}, error) {
 	// this is defined in the exports/exports.go file
 	doStuff()
 
-	return dt, nil
+	return dt, nil, nil
 }
 
 // MyExport is a function stub to export the wrapped and managed version
