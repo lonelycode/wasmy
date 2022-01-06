@@ -180,19 +180,20 @@ func (r *Runner) WarmUp(engine *wasmtime.Engine, module *wasmtime.Module, wasiCo
 }
 
 // Run will call a function in the WASM module
-func (r *Runner) Run(name string, args ...interface{}) (interface{}, error) {
+func (r *Runner) Run(name string, args ...interface{}) (*shared_types.Payload, error) {
 	fn, ok := r.FuncMap[name]
 	if !ok {
 		return nil, fmt.Errorf("function name not found")
 	}
 
 	out := &shared_types.Payload{}
+
 	err := ManagedCall(r.store, r.mem, r.inputBufferFn, r.outputBufferFn, fn, out, args...)
 	if err != nil {
 		return nil, err
 	}
 
-	return out.Data, nil
+	return out, nil
 }
 
 // ManagedCall handles all the I/O for calling an exported WASM mmodule function by reading

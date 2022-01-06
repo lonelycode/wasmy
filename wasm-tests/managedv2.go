@@ -20,7 +20,9 @@ func PrintHello(int32) int32
 // this is the function signature for all exported functions managed by the prototype
 func myFunction(args ...interface{}) (interface{}, error) {
 	name := args[0].(string)
+
 	dt := fmt.Sprintf("hello %s", name)
+
 	fmt.Printf("inside module: %s\n", dt)
 
 	// For demo purposes, let's call an imported function here,

@@ -8,5 +8,6 @@ type Args struct {
 
 //tinyjson:json
 type Payload struct {
-	Data interface{} `msg:"data"`
+	Data interface{}       `msg:"data"`
+	Meta map[string]string `msg:"meta"`
 }

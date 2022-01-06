@@ -17,8 +17,12 @@ func call(engine *wasmtime.Engine, module *wasmtime.Module, arg string) {
 	}
 
 	t3 := time.Now()
+
 	err := r.WarmUp(engine, module, nil, "myExport")
+
+	fmt.Println(r.HostFunctions)
 	if err != nil {
+		fmt.Println("warm-up panic")
 		panic(err)
 	}
 	t4 := time.Since(t3)
@@ -32,27 +36,21 @@ func call(engine *wasmtime.Engine, module *wasmtime.Module, arg string) {
 	}
 	t6 := time.Since(t5)
 	fmt.Printf("wasm run took %s\n", t6)
-	fmt.Printf("function output (from runner): %v \n", out)
+	fmt.Printf("function output (from runner): %v \n", out.Data)
 }
 
 func main() {
 	// TODO: make this use application arguments
 	t1 := time.Now()
 	engine := wasmtime.NewEngine()
-	module, err := runner.GetModule("/home/vmuser/shiny-metal/modules/bite-my/ass.wasm", engine)
+	module, err := runner.GetModule("/home/vmuser/wasmy/wasm-tests/managedv2.wasm", engine)
 	if err != nil {
 		panic(err)
 	}
 	t2 := time.Since(t1)
 	fmt.Printf("wasm load took %s\n", t2)
 
-	r := &runner.Runner{}
-	err = r.WarmUp(engine, module, wasmtime.NewWasiConfig(), "fooBar")
-	if err != nil {
-		panic(err)
-	}
-
-	//go call(engine, module, "martin")
+	go call(engine, module, "martin")
 	//go call(engine, module, "bianca")
 	//go call(engine, module, "ilrud")
 
