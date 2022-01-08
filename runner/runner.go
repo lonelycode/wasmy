@@ -149,6 +149,9 @@ func (r *Runner) GetInstance(module *wasmtime.Module, engine *wasmtime.Engine, w
 // they are provided by a WasmModulePrototype instance.
 func (r *Runner) GetRequiredExports(instance *wasmtime.Instance, store *wasmtime.Store) {
 	r.mem = instance.GetExport(store, "memory").Memory()
+
+	r.mem.Grow(store, 19)
+
 	r.inputBufferFn = instance.GetExport(store, "inputBuffer").Func()
 	r.outputBufferFn = instance.GetExport(store, "outputBuffer").Func()
 

@@ -16,7 +16,7 @@ const (
 	// FUNCBUFFER_SIZE sets the maximum size of I/O
 	// buffers used to pass data between host and
 	// guest and vice versa
-	FUNCBUFFER_SIZE = 1024
+	FUNCBUFFER_SIZE = 1344000
 )
 
 // WasmModulePrototype provides a wrapper for managing I/O for WASM modules
